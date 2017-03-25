@@ -11,6 +11,19 @@
 
 #include IMPL
 
+#ifdef THREADPOOL
+#include "text_align.h"
+#include "threadpool.h"
+#include "debug.h"
+#include <fcntl.h>
+#define ALIGN_FILE "align.txt"
+#define OUTPUT_FILE "threadpool.txt"
+
+#ifndef THREAD_NUM
+#define THREAD_NUM 4
+#endif
+#else
+
 #ifndef OPT
 #define OUTPUT_FILE "orig.txt"
 
@@ -24,7 +37,7 @@
 #ifndef THREAD_NUM
 #define THREAD_NUM 4
 #endif
-
+#endif
 #endif
 
 #define DICT_FILE "./dictionary/words.txt"
@@ -44,7 +57,7 @@ static double diff_in_second(struct timespec t1, struct timespec t2)
 
 int main(int argc, char *argv[])
 {
-#ifndef OPT
+#ifdef ORG
     FILE *fp;
     int i = 0;
     char line[MAX_LAST_NAME_SIZE];
@@ -55,7 +68,7 @@ int main(int argc, char *argv[])
     double cpu_time1, cpu_time2;
 
     /* File preprocessing */
-#ifndef OPT
+#ifdef ORG
     /* check file opening */
     fp = fopen(DICT_FILE, "r");
     if (!fp) {
@@ -72,10 +85,13 @@ int main(int argc, char *argv[])
     entry *pHead, *e;
     printf("size of entry : %lu bytes\n", sizeof(entry));
 
-#if defined(OPT)
+#if defined(OPT) || defined(THREADPOOL)
     char *map;
     entry *entry_pool;
+
+#if defined (OPT)
     pthread_t threads[THREAD_NUM];
+#endif
     thread_arg *thread_args[THREAD_NUM];
 
     /* Start timing */
@@ -94,12 +110,23 @@ int main(int argc, char *argv[])
         thread_args[i] = createThread_arg(map + MAX_LAST_NAME_SIZE * i, map + file_size, i,
                                           THREAD_NUM, entry_pool + i);
     /* Deliver the jobs to all threads and wait for completing */
+
+#if defined (OPT)
     clock_gettime(CLOCK_REALTIME, &mid);
     for (int i = 0; i < THREAD_NUM; i++)
         pthread_create(&threads[i], NULL, (void *)&append, (void *)thread_args[i]);
 
     for (int i = 0; i < THREAD_NUM; i++)
         pthread_join(threads[i], NULL);
+
+#endif
+#if defined (THREADPOOL)
+    clock_gettime(CLOCK_REALTIME, &mid);
+    threadpool_t *threadpool = threadpool_create(THREAD_NUM, 10, 0);
+    for (int i = 0; i < THREAD_NUM; i++)
+        threadpool_add(threadpool, &append, thread_args[i], 0);
+    threadpool_destroy(threadpool, 1);
+#endif
 
     /* Connect the linked list of each thread */
     for (int i = 0; i < THREAD_NUM; i++) {
@@ -176,7 +203,7 @@ int main(int argc, char *argv[])
     printf("execution time of findName() : %lf sec\n", cpu_time2);
 
     /* Release memory */
-#ifndef OPT
+#ifdef ORG
     while (pHead) {
         e = pHead;
         pHead = pHead->pNext;
