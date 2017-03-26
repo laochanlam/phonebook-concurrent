@@ -50,4 +50,6 @@ void show_entry(entry *pHead);
 
 static double diff_in_second(struct timespec t1, struct timespec t2);
 
+entry *removeName(char lastName[], entry *pHead);
+
 #endif

@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 #include <time.h>
-
+#include <stdbool.h>
 #define MAX_LAST_NAME_SIZE 16
 
 #define OPT 1
@@ -49,5 +49,7 @@ void append(void *arg);
 void show_entry(entry *pHead);
 
 static double diff_in_second(struct timespec t1, struct timespec t2);
+
+entry *removeName(char lastName[], entry *pHead);
 
 #endif

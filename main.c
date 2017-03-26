@@ -4,7 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
-
+#include <stdbool.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/mman.h>
@@ -192,6 +192,9 @@ int main(int argc, char *argv[])
     findName(input, e);
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
+
+    assert(removeName(input, e));
+
 
     /* Write the execution time to file. */
     FILE *output;

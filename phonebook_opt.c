@@ -93,3 +93,15 @@ static double diff_in_second(struct timespec t1, struct timespec t2)
     }
     return (diff.tv_sec + diff.tv_nsec / 1000000000.0);
 }
+
+entry *removeName(char lastName[], entry *pHead)
+{
+    while (pHead) {
+        if (strcasecmp(lastName, pHead->lastName) == 0) {
+            pHead = pHead->pNext;
+            return pHead;
+        }
+        pHead = pHead->pNext;
+    }
+    return NULL;
+}

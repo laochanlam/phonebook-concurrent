@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #include "phonebook_orig.h"
 
@@ -25,4 +26,16 @@ entry *append(char lastName[], entry *e)
     e->pNext = NULL;
 
     return e;
+}
+
+entry *removeName(char lastName[], entry *pHead)
+{
+    while (pHead) {
+        if (strcasecmp(lastName, pHead->lastName) == 0) {
+            pHead = pHead->pNext;
+            return pHead;
+        }
+        pHead = pHead->pNext;
+    }
+    return NULL;
 }
